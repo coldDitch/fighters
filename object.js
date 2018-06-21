@@ -1,9 +1,19 @@
 module.exports ={
 player: function() {
-  const math=require('mathjs')
-    this.y=0;
-    this.x=0;
-    this.id=10;
+  var math=require('mathjs')
+
+    //relevant variables for planes properties
+    const plane_speed=6;
+    const speed_motors_off=1;
+
+    //turning speed degrees pre frame
+    this.angularspeed=2;
+
+    //constant force downwards
+    var gravity=0.1;
+    //force dependent on angle on wings
+    var stall_coeff=0.3;
+    var healthpoints=5;
 
 
   this.speed = function (velocity) {
@@ -11,17 +21,18 @@ player: function() {
     return temp;
   };
 
-  this.velocity=[15,0];
-  this.angularspeed=1.5;
+  this.y=0;
+  this.x=0;
+  this.velocity=[plane_speed,0];
   this.motorsOn=true;
-  this.healthpoints=5;
   this.pressingRight=false;
   this.pressingLeft=false;
   this.pressingDown=false;
+  this.id;
 
 
   this.gravity = function() {
-    return 0.6/(this.orientation()+3/2*math.PI)+0.3;
+    return stall_coeff/(this.orientation()+3/2*math.PI)+gravity;
   }
 
   this.giveSpeed = function(val,rate) {
@@ -42,10 +53,10 @@ player: function() {
   this.downArrow = function() {
   if(this.motorsOn){
     this.motorsOn=false;
-    this.giveSpeed(7,0.4)
+    this.giveSpeed(plane_speed,0.4)
   } else {
     this.motorsOn=true;
-    this.giveSpeed(10,0.1);
+    this.giveSpeed(speed_motors_off,0.1);
   }
 }
 
@@ -66,14 +77,15 @@ player: function() {
 
     if(this.motorsOn){
       //update done motors on
-      this.giveSpeed(20,0.1);
+      this.giveSpeed(plane_speed,0.1);
     } else {
       //update done motors off
       this.velocity[1]+=this.gravity()
       //drifting speed
-      this.giveSpeed(3,0.0001)
+      this.giveSpeed(speed_motors_off,0.0001)
     }
   }
+
 
     //function for determining direction of the plane
   this.orientation = function(){

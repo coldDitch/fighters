@@ -13,28 +13,46 @@ this.getAngle=function(){
   return orientation;
 }
 
-var jotain={};
-var yourID=0;
+this.getPlanes=function(){
+  return players;
+}
+
+this.getID=function(){
+  return yourID;
+}
+
+this.getPlayerCount=function(){
+  return numberOfPlayers;
+}
+
+this.socket.on('numberOfPlayers',function(data){
+  numberOfPlayers=data;
+});
+
+var numberOfPlayers=0;
+var yourID;
 var x=0;
 var y=0;
 var orientation=0;
 
-this.update= function(x,y,angle) {
-  this.x=x;
-  this.y=y;
-  this.orientation=angle;
-}
+var players=[];
+
 
 this.socket.on('yourID',function(data){
+  console.log(data);
   yourID=data;
 });
 
 this.socket.on('newPositions',function(data){
-  jotain=data;
+  this.jotain=data;
   for(var i in data){
+    if(data[i].id==yourID){
       x=data[i].x;
       y=data[i].y;
       orientation=data[i].angle;
+    } else {
+      players.push(data[i])
+    }
   }
 });
 
