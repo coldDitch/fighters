@@ -3,17 +3,19 @@ player: function() {
   var math=require('mathjs')
 
     //relevant variables for planes properties
-    const plane_speed=6;
-    const speed_motors_off=1;
+    const plane_speed=3;
+    const speed_motors_off=0.5;
+    const plane_length=40;
+    const plane_height=20;
 
     //turning speed degrees pre frame
     this.angularspeed=2;
 
     //constant force downwards
-    var gravity=0.1;
+    var gravity=0.01;
     //force dependent on angle on wings
     var stall_coeff=0.3;
-    var healthpoints=5;
+    this.health=5;
 
 
   this.speed = function (velocity) {
@@ -21,6 +23,7 @@ player: function() {
     return temp;
   };
 
+  this.time=0;
   this.y=0;
   this.x=0;
   this.velocity=[plane_speed,0];
@@ -28,6 +31,7 @@ player: function() {
   this.pressingRight=false;
   this.pressingLeft=false;
   this.pressingDown=false;
+  this.pressingCtrl=false;
   this.id;
 
 
@@ -46,9 +50,19 @@ player: function() {
   }
 }
 
-  this.shoot = function() {
+  this.check_collision_with = function(xp,yp){
+    var y_value_inder=plane_height/math.cos(this.orientation());
+    var radius=math.sqrt(math.pow(this.x-xp,2)+math.pow(this.y-yp,2));
+    var top=this.y+y_value_inder;
+    var bottom=this.y-y_value_inder;
 
+    if(radius<plane_length&&(yp<top&&yp>bottom)){
+      return true
+    } else {
+      return false
+    }
   }
+
 
   this.downArrow = function() {
   if(this.motorsOn){

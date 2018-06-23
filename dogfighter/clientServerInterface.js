@@ -29,6 +29,15 @@ this.socket.on('numberOfPlayers',function(data){
   numberOfPlayers=data;
 });
 
+this.socket.on('bullets',function(data){
+  bullets=data;
+});
+
+this.getBullets=function(){
+  return bullets;
+}
+
+var bullets=[];
 var numberOfPlayers=0;
 var yourID;
 var x=0;
