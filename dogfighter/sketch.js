@@ -2,11 +2,11 @@
 
 
 //global variables
-var planeIMG;
-var img;
-var serverInt;
-var ground;
-var health;
+let planeIMG;
+let img;
+let serverInt;
+let ground;
+let health;
 
 
   //preload images for better responsetime
@@ -35,8 +35,8 @@ function draw() {
   //setup blue background
   background(0,10,500);
 
-  var x=serverInt.getX();
-  var y=serverInt.getY();
+  let x=serverInt.place[0];
+  let y=serverInt.place[1];
 
 
   translate(width/2-x,height/2-y);
@@ -46,7 +46,7 @@ function draw() {
 
 
   //loop for drawing continous background
-  for (var i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
   image(ground,2000*i,500,2000,100);
   image(img,i*2000+0.5*x,0);
   }
@@ -55,28 +55,20 @@ function draw() {
 
   translate(x,y)
 
-  serverInt.socket.on('hit',function(data){
-    health=data;
-  })
-
 
   //image rotation and update
-  rotate(0.15+serverInt.getAngle());
+  rotate(0.15+serverInt.orientation);
   image(planeIMG,0,0,75,37.5);
-  rotate(-(0.15+serverInt.getAngle()));
+  rotate(-(0.15+serverInt.orientation));
 
 
-  var players=serverInt.getPlanes();
-  var count=serverInt.getPlayerCount();
 
 
-  for(var i in players){
-    if(i>=players.length-count){
-    someplayer=players.pop();
-    drawPlane((someplayer.x-x),(someplayer.y-y),0.15+someplayer.angle);
-  }
-  }
-  healthBar(health);
+  serverInt.players.forEach(el=>{
+    drawPlane((el.place[0]-x),(el.place[1]-y),0.15+el.angle);
+  });
+
+  healthBar(serverInt.health);
 } //DRAW END
 
 
@@ -99,14 +91,10 @@ function drawPlane(xp,yp,angle){
  }
 
 function drawBullets(){
-  var bullets=serverInt.getBullets();
-  if(bullets.length>0){
-    for(var i in bullets){
-      console.log(bullets[i].x)
+  serverInt.bullets.forEach(bullet=>{
       fill(0)
-      ellipse(bullets[i].x,bullets[i].y,5,5)
-    }
-  }
+      ellipse(bullet[0],bullet[1],5,5)
+    });
 }
 
 //keyboard for pressing key

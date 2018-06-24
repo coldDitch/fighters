@@ -2,9 +2,9 @@ var express = require('express');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server,{});
-var playerGen=require('./object');
+var Player=require('./Player');
 var math=require('mathjs');
-var bulletGen=require('./bulletinstance');
+var Bullet=require('./bulletinstance');
 
 //express for pushing files
 app.use(express.static(__dirname+'/dogfighter'));
@@ -14,26 +14,24 @@ server.listen(8080,function() {
 });
 
 //socket and player holders
-SOCKET_LIST = [];
-PLAYER_LIST = [];
-bullet_list = [];
-intcount=0;
+let SOCKET_LIST = [];
+let PLAYER_LIST = [];
+let bullet_list = [];
+let intcount=0;
 
 io.sockets.on('connection',function(socket){
 
   intcount++;
+
   //player object
-  const player=new playerGen.player();
+  const player=new Player();
   console.log("Player Connected "+ intcount);
   socket.id=math.random()
   player.id=socket.id
   SOCKET_LIST[socket.id]=socket;
   PLAYER_LIST[player.id]=player;
   socket.emit('yourID', socket.id);
-  for (let j in SOCKET_LIST) {
-  SOCKET_LIST[j].emit('numberOfPlayers', intcount);
-}
-
+  pushNumber(intcount);
 
   //disconnect a player
  socket.on('disconnect', function(){
@@ -41,95 +39,90 @@ io.sockets.on('connection',function(socket){
    intcount--;
    delete SOCKET_LIST[socket.id];
    delete PLAYER_LIST[player.id];
+   pushNumber(intcount);
    console.log(intcount+" player left on server")
  });
 
  //key press forwarded to players function
  socket.on('keyPress',function(data){
-   if(data.inputID==='left'){
-     player.pressingLeft=data.state;
-   } else if(data.inputID==='right'){
-     player.pressingRight=data.state;
-   } else if(data.inputID==='down'){
-     player.downArrow();
-   } else if(data.inputID==='ctrl'){
-     player.pressingCtrl=data.state;
-     if(player.time>100){player.time=18}
+   switch (data.inputID) {
+     case 'left':
+      player.pressingLeft=data.state;
+      break;
+
+      case'right':
+      player.pressingRight=data.state;
+      break;
+
+      case 'down':
+      player.downArrow();
+      break;
+
+      case 'ctrl':
+      player.pressingCtrl=data.state;
+      if(player.time>20){player.time=18}
+      break;
    }
  });
 
 });
 
-
-
-
+function pushNumber(intCount){
+  for(let i in SOCKET_LIST){
+    let el=SOCKET_LIST[i];
+    el.emit('numberOfPlayers',intCount)
+    }
+}
 
 setInterval(function() {
 
- var bullets=[];
+ let bullets=[];
  if(bullet_list.length>0){
-  for(let i in bullet_list) {
-    singleBullet=bullet_list[i]
-    singleBullet.update();
-    if(singleBullet.lifetime<1){
-      delete bullet_list[i];
-    } else {
-      bullets.push({
-        x:singleBullet.x,
-        y:singleBullet.y
-      });
-    }
-  }
+   bullet_list=bullet_list.filter(el=> el.lifetime>0);
+   bullet_list.forEach(el => {
+     el.update();
+     bullets.push(el.place)
+  });
 }
 
-  for(let i in PLAYER_LIST) {
-    player=PLAYER_LIST[i]
-
-    if(player.pressingCtrl&&(player.time%20)==0){
-      let bul=new bulletGen.bullet(player.velocity,player.x,player.y)
-      bullet_list.push(bul);
-    }
-
-    player.time++;
-
-    for(let j in bullet_list) {
-      if(i!=j){
-        if(player.check_collision_with(bullet_list[j].x,bullet_list[j].y)){
-          player.health=player.health-1
-          if(player.health < 0){
-            player.x=0;
-            player.y=0;
-            player.health=5;
-          }
-          console.log("player hit "+ player.health)
-          SOCKET_LIST[i].emit('hit',player.health);
-          delete bullet_list[j];
-        }
-      }
-    }
-  }
-
   //initialise data packet
-  var pack = [];
+  let pack = [];
 
   //update data of all players
   for(let i in PLAYER_LIST) {
-    let single=PLAYER_LIST[i]
+    let player=PLAYER_LIST[i]
+  if(player.pressingCtrl&&(player.time%20)==0){
+    let bul=new Bullet(player.velocity,player.place)
+    bullet_list.push(bul);
+  }
+  player.time++;
 
-    single.update();
+
+  bullet_list.forEach((bullet,i)=>{
+    if(player.check_collision_with(bullet.place)){
+      player.health=player.health-1;
+      if(player.health < 0){
+        player.place=[0,0];
+        player.health=5;
+      }
+      console.log("player hit "+ player.health);
+      SOCKET_LIST[player.id].emit('hit',player.health);
+      delete bullet_list[i];
+    }
+  });
+    player.update();
     pack.push({
-      x:single.x,
-      y:single.y,
-      id:single.id,
-      angle:single.orientation()
+      place:player.place,
+      id:player.id,
+      angle:player.orientation()
     });
   }
-
   //send packet to all players
-  for (let j in SOCKET_LIST) {
-    SOCKET_LIST[j].emit('newPositions',pack);
-    SOCKET_LIST[j].emit('bullets',bullets);
-  }
+  for(let i in SOCKET_LIST){
+    let socket=SOCKET_LIST[i]
+    socket.emit('newPositions',pack);
+    socket.emit('bullets',bullets);
+  };
 
 
 },1000/100);

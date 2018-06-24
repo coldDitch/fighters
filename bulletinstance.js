@@ -1,15 +1,12 @@
-module.exports ={
-  bullet: function(velocity,x,y) {
-    var math=require('mathjs')
+module.exports =class Bullet{
+  constructor(velocity,place) {
     this.lifetime=200;
     this.velocity=[velocity[0]*2,velocity[1]*2];
-    this.x=x+20*this.velocity[0];
-    this.y=y+20*this.velocity[1];
+    this.place=place.map((el,i)=>el+velocity[i]*20)
+  }
 
-    this.update=function() {
-      this.x+=this.velocity[0];
-      this.y+=this.velocity[1];
+    update() {
+      this.place=this.place.map((el,i)=>el+this.velocity[i])
       this.lifetime-=1
     }
-  }
 }
