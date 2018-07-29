@@ -1,5 +1,6 @@
 module.exports =class Bullet{
-  constructor(velocity,place) {
+  constructor(velocity,place,team) {
+    this.team=team
     this.lifetime=200;
     this.velocity=[velocity[0]*2,velocity[1]*2];
     this.place=place.map((el,i)=>el+velocity[i]*20)

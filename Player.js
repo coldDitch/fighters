@@ -1,7 +1,9 @@
 var math=require('mathjs');
 module.exports=class Player {
 
-  constructor(){
+  constructor(name,team){
+    this.player_name=name
+    this.team=team
     //relevant properties of plane
     this.plane_speed=3;
     this.speed_motors_off=1;
@@ -20,7 +22,8 @@ module.exports=class Player {
     //starting state of a plane
     this.time=0;
     this.place=[0,0]
-    this.velocity=[this.plane_speed,0];
+    this.velocity=[0,0]
+    this.kill()
     this.motorsOn=true;
     this.pressingRight=false;
     this.pressingLeft=false;
@@ -28,6 +31,19 @@ module.exports=class Player {
     this.pressingCtrl=false;
     this.id;
     this.dirCount=0;
+  }
+
+  kill(){
+    if(this.team=="axis"){
+      this.place=[0,0];
+      this.health=5;
+      this.velocity=[this.plane_speed,0]
+    }
+    if(this.team=="allied"){
+      this.place=[8000,0]
+      this.health=5
+      this.velocity=[-this.plane_speed,0]
+    }
   }
 
   //speed of this plane

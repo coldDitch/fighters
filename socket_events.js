@@ -1,11 +1,13 @@
 var main=require('./main')
 var Player=require('./Player');
 var math=require('mathjs');
+var Room=require('./room')
 
 //export modules
-module.exports.disconnect=disconnect
 module.exports.keypress_event=keypress_event
 module.exports.push_number=push_number
+
+//create new Room
 
 //function for handling player commands
 function keypress_event(data,player){
@@ -29,18 +31,10 @@ function keypress_event(data,player){
   }
 }
 
-function disconnect(socket,player){
-  console.log("Player Disconnected");
-  intcount--;
-  delete SOCKET_LIST[socket.id];
-  delete PLAYER_LIST[player.id];
-  push_number(intcount);
-  console.log(intcount+" player left on server")
-}
 
-function push_number(){
-  for(let i in SOCKET_LIST){
-    let el=SOCKET_LIST[i];
-    el.emit('numberOfPlayers',global.intCount)
+function push_number(intcount,LIST){
+  for(let i in LIST){
+    let el=LIST[i];
+    el.emit('numberOfPlayers',intcount)
     }
 }
