@@ -14,7 +14,6 @@ module.exports=class Room{
   }
 
   add_player(socket,player){
-
     this.intcount++
     socket.id=math.random()
     player.id=socket.id

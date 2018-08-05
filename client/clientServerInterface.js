@@ -14,6 +14,7 @@ class Interface {
     this.name="NULL"
     this.orientation=0;
     this.players=[];
+    this.serverList=[];
 
     this.socket.on('yourID',function(data){
       console.log(data);
@@ -24,6 +25,11 @@ class Interface {
       self.numberOfPlayers=data;
     })
 
+    this.socket.on('rooms',data=>{
+      console.log(data)
+      self.serverList=data
+      set_selection()
+    })
 
     this.socket.on('newPositions',function(data){
           self.players=[];

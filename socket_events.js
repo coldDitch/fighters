@@ -6,6 +6,8 @@ var Room=require('./room')
 //export modules
 module.exports.keypress_event=keypress_event
 module.exports.push_number=push_number
+module.exports.push_rooms=push_rooms
+
 
 //create new Room
 
@@ -29,6 +31,14 @@ function keypress_event(data,player){
      if(player.time>20){player.time=18}
      break;
   }
+}
+
+function push_rooms(LIST,socket){
+  let names=[]
+  for(let i in LIST){
+    names.push(i)
+  }
+  socket.emit('rooms',names)
 }
 
 

@@ -7,6 +7,9 @@ let img;
 let serverInt;
 let ground;
 let health;
+let started=false;
+let input, button, greeting;
+let create_room, join_room, selection, rooms
 
 
   //preload images for better responsetime
@@ -19,17 +22,61 @@ function preload() {
 
   //setup gaming environment
 function setup()  {
+  serverInt=new Interface();
+  menu()
+}
+
+function menu(){
+  createCanvas(710, 400);
+
+  input = createInput();
+  input.position(20, 65);
+
+  button = createButton('Join room');
+  button.position(input.x + input.width, 65);
+  button.mousePressed(start);
+
+  greeting = createElement('h2', 'Nickname');
+  greeting.position(20, 5);
+  rooms = createElement('h2','Room selection')
+  rooms.position(300,5)
+  selection=createSelect()
+  selection.position(300,65)
+  for(i in serverInt.serverList){
+    selection.option(i)
+  }
+  create_room= createButton('Create new room')
+  create_room.position(20,100)
+
+  textAlign(CENTER);
+  textSize(50);
+}
+function set_selection(){
+  for(i in serverInt.serverList){
+    selection.option(serverInt.serverList[i])
+  }
+}
+function hide_menu(){
+  button.remove()
+  input.remove()
+  greeting.remove()
+  create_room.remove()
+  selection.remove()
+  rooms.remove()
+}
+function start(){
+  serverInt.socket.emit('join',selection.value())
+  hide_menu()
+  started=true
   createCanvas(1500,750);
   imageMode(CENTER);
-  serverInt=new Interface();
   health=5;
 }
 
-
-
-
   //function for drawing graphics. called 60time/s
+
 function draw() {
+  if(started){
 
 
 
@@ -79,6 +126,7 @@ function draw() {
   });
 
   statusBar(serverInt.health,serverInt.axis,serverInt.allied);
+}
 } //DRAW END
 
 

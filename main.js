@@ -15,19 +15,23 @@ server.listen(8080,function() {
 });
 
 //room holder TODO room creationg
-  ROOM_LIST=[]
-  let test=new Room("testroom")
-  ROOM_LIST[test.id]=test
+ var ROOM_LIST=[]
+  let test=new Room("test",8)
 
 io.sockets.on('connection',function(socket){
   //player object
-  const player=new Player("testplayer"+ROOM_LIST[test.id].intcount,"allied");
+  ROOM_LIST[test.name]=test
+  const player=new Player("testplayer"+ROOM_LIST[test.name].intcount,"allied");
 
-  //add player to room
-  ROOM_LIST[test.id].add_player(socket,player)
+  socket_event.push_rooms(ROOM_LIST,socket)
+  //creates new room
+  socket.on('create_room',data=>{
+    const temp=new Room(data.name,data.size)
+    ROOM_LIST[temp.id]=temp})
 
+  socket.on('join',data=>{ROOM_LIST[data].add_player(socket,player)})
   //disconnect a player
-  socket.on('disconnect',()=>ROOM_LIST[test.id].remove_player(socket,player));
+  socket.on('disconnect',()=>ROOM_LIST[test.name].remove_player(socket,player));
 
   //key press forwarded to players function
   socket.on('keyPress',data=>socket_event.keypress_event(data,player));
@@ -37,6 +41,8 @@ io.sockets.on('connection',function(socket){
 //updates all rooms at 100Hz frequenzy
 setInterval(function() {
 for(let i in ROOM_LIST){
+  if(ROOM_LIST[i].intcount>0){
   ROOM_LIST[i].update()
+}
 }
 },1000/100);
